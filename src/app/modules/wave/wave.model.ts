@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { TWave } from "./wave.interface";
+import { RippleModel } from "../ripple/ripple.model";
 
 const waveSchema = new Schema<TWave>(
   {
@@ -27,21 +28,18 @@ const waveSchema = new Schema<TWave>(
 );
 
 // Query middleware to exclude deleted waves
-waveSchema.pre('find', function () {
+waveSchema.pre(/^find/, function (this: any) {
   this.where({ isDeleted: { $ne: true } });
 });
 
-waveSchema.pre('findOne', function () {
-  this.where({ isDeleted: { $ne: true } });
-});
-// waveSchema.post('findOneAndUpdate', async function (doc) {
+waveSchema.post('findOneAndUpdate', async function (doc) {
 
-//   if (doc && doc.isDeleted === true) {
-//     await RippleModel.updateMany(
-//       { waveId: doc._id }, 
-//       { $set: { isDeleted: true } } 
-//     );
-//     console.log(`Associated ripples for wave ${doc._id} are also soft deleted.`);
-//   }
-// });
+  if (doc && doc.isDeleted === true) {
+    await RippleModel.updateMany(
+      { waveId: doc._id }, 
+      { $set: { isDeleted: true } } 
+    );
+    console.log(`Associated ripples for wave ${doc._id} are also soft deleted.`);
+  }
+});
 export const WaveModel = model<TWave>("Wave", waveSchema);
