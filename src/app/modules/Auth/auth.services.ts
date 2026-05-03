@@ -6,8 +6,10 @@ import { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { TUser } from "../User/user.interface";
 import { UserModel } from "../User/user.model";
-import { sendMail } from "../../utils/sendMail";
+
 import config from "../../config";
+import { getEmailTemplate } from "../../utils/emailTemplate";
+import sendEmail from "../../utils/sendEmail";
 
 // --- Register New User (Manual Signup) ---
 const registeredUserIntoDB = async (payload: TUser) => {
@@ -35,12 +37,17 @@ const registeredUserIntoDB = async (payload: TUser) => {
   const user = await UserModel.create(newUserData);
 
   // Send OTP email
-  await sendMail(
-    payload.email,
-    "Your Currently OTP Code",
-    `Your OTP code is: ${otp}. It will expire in 5 minutes.`
-  );
-
+ const html = getEmailTemplate({
+  userName: payload.firstName,
+  title: "Verify Your Account",
+  body: "Welcome to Currently! Use the code below to verify your email and start making ripples.",
+  otpCode: otp
+});
+await sendEmail({
+  to: payload.email,
+  subject: "Verify your Currently Account",
+  html: html
+});
   return user;
 };
 
@@ -87,7 +94,17 @@ export const verifyOTPForRegistration = async (email: string, otp: string) => {
     config.jwt_refresh_secret as string,
     config.jwt_refresh_expires_in as string
   );
+const html = getEmailTemplate({
+  userName: user.firstName,
+  title: "Welcome to Currently!",
+  body: "We are excited to have you here. Your account is now fully verified. Start your first session and make some ripples today!"
+});
 
+await sendEmail({
+  to: user.email,
+  subject: "Welcome to Currently!",
+  html: html
+});
   return {
     accessToken,
     refreshToken,
@@ -109,12 +126,20 @@ const resendOTP = async (email: string) => {
     },
   });
 
-  await sendMail(
-    email,
-    "Your New OTP Code",
-    `Your new OTP code is: ${otp}. It will expire in 5 minutes.`
-  );
+const html = getEmailTemplate({
+    userName: user.firstName,
+    title: "New OTP Requested",
+    body: "You requested a new verification code. Please use the code below to verify your account. If you didn't request this, you can safely ignore this email.",
+    otpCode: otp
+  });
 
+ 
+  // await sendEmail(email, "Your New OTP Code", html);
+await sendEmail({
+  to: email,
+  subject: "Your New OTP Code",
+  html: html
+});
   return { message: "OTP sent successfully!" };
 };
 
@@ -192,12 +217,17 @@ const loginAdmin = async (payload: TLoginAdmin) => {
 };
 
 // --- Password Management (Change/Forgot/Reset) ---
-const changePassword = async (me: JwtPayload, payload: { oldPassword: string; newPassword: string }) => {
+const changePassword = async (
+  me: JwtPayload,
+  payload: { oldPassword: string; newPassword: string }
+) => {
   const user = await UserModel.isUserExistsById(me.userId);
   if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found!");
+
   if (!user.password) {
     throw new AppError(httpStatus.BAD_REQUEST, "No password exists for this account!");
   }
+
   const isMatched = await UserModel.isPasswordMatched(payload.oldPassword, user.password);
   if (!isMatched) throw new AppError(httpStatus.FORBIDDEN, "Old password is incorrect!");
 
@@ -208,7 +238,17 @@ const changePassword = async (me: JwtPayload, payload: { oldPassword: string; ne
     passwordChangedAt: new Date(),
   });
 
-  return { message: "Password updated successfully" };
+
+  const jwtPayload = { userId: user._id!.toString(), role: user.role };
+  
+  const accessToken = createToken(jwtPayload, config.jwt_access_secret as string, config.jwt_access_expires_in as string);
+  const refreshToken = createToken(jwtPayload, config.jwt_refresh_secret as string, config.jwt_refresh_expires_in as string);
+
+  return {
+    accessToken,
+    refreshToken,
+    message: "Password updated successfully"
+  };
 };
 
 const forgotPass = async (email: string) => {
@@ -224,7 +264,19 @@ const forgotPass = async (email: string) => {
     },
   });
 
-  await sendMail(email, "Reset Password OTP", `Your OTP to reset password is: ${otp}`);
+
+const html = getEmailTemplate({
+  userName: user.firstName,
+  title: "Reset Your Password",
+  body: "We received a request to reset your password. Use the OTP below to proceed with resetting your password.",
+  otpCode: otp 
+});
+
+await sendEmail({
+  to: email,
+  subject: "Password Reset OTP",
+  html: html
+});
 };
 
 const verifyOTP = async (email: string, otp: string) => {
@@ -249,6 +301,19 @@ const resetPassword = async (payload: { email: string; newPassword: string }) =>
     verification: undefined
   });
 
+const html = getEmailTemplate({
+  userName: user.firstName,
+  title: "Password Reset Successful",
+  body: "Your password has been successfully updated. If you didn't perform this action, please contact support immediately.",
+  buttonText: "Login Now",
+  buttonLink: "https://currently.app/login"
+});
+
+await sendEmail({
+  to: user.email,
+  subject: "Password Security Alert",
+  html: html
+});
   return { message: "Password reset successful" };
 };
 

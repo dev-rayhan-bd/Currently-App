@@ -1,19 +1,15 @@
-// utils/sendEmail.ts
-import nodemailer, { SendMailOptions, SentMessageInfo } from 'nodemailer';
-import httpStatus from 'http-status';
-import AppError from '../errors/AppError';
+import nodemailer from 'nodemailer';
 import config from '../config';
+import AppError from '../errors/AppError';
+import httpStatus from 'http-status';
 
-// Updated MailOptions interface with html support
-interface MailOptions {
-  from?: string;
+interface IMailOptions {
   to: string;
   subject: string;
-  text?: string;   // Made optional
-  html?: string;   // Added html support
+  html: string;
 }
 
-const sendEmail = async ({ from, to, subject, text, html }: MailOptions): Promise<boolean> => {
+const sendEmail = async (options: IMailOptions): Promise<boolean> => {
   try {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -23,20 +19,18 @@ const sendEmail = async ({ from, to, subject, text, html }: MailOptions): Promis
       },
     });
 
-    const mailOptions: SendMailOptions = {
-      from,
-      to,
-      subject,
-      text,
-      html,  // Added html
+    const mailOptions = {
+      from: `"Currently App" <${config.SMTP_USER}>`,
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
     };
 
-    const info: SentMessageInfo = await transporter.sendMail(mailOptions);
-    console.log('Message sent: %s', info.messageId);
+    await transporter.sendMail(mailOptions);
     return true;
   } catch (error: any) {
     console.error('Error sending mail: ', error);
-    throw new AppError(httpStatus.BAD_REQUEST, 'Failed to send email');
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to send email');
   }
 };
 

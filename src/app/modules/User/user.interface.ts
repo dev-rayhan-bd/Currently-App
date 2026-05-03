@@ -17,7 +17,7 @@ export interface TUser {
     code: string | null;
     expireDate: Date | null;
   };
-  status: 'in-progress' | 'blocked';
+  status: 'active' | 'blocked';
   fcmToken?: string;
   role: TUserRole;
   isOtpVerified: boolean;
