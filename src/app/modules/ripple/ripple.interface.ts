@@ -3,13 +3,16 @@ import { Types } from "mongoose";
 export type TRippleStatus = 'not-started' | 'in-progress' | 'paused' | 'completed';
 
 export interface TRipple {
-  waveId: Types.ObjectId;
   user: Types.ObjectId;
+  waveId?: Types.ObjectId; 
   title: string;
-  duration: number; // minutes (e.g., 25)
-  timeSpent: number; // actual spent time in seconds
+  duration: number; // minutes
+  timeSpent: number; // seconds
   status: TRippleStatus;
-  startTime?: Date;
+  order: number; 
+  notes?: string; 
+  classroomId?: string; 
   isPriority: boolean;
+  completedAt?: Date; 
   isDeleted: boolean;
 }

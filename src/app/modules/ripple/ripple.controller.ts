@@ -15,23 +15,8 @@ const createRipple = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const updateRippleStatus = catchAsync(async (req: Request, res: Response) => {
-  const result = await RippleServices.updateRippleStatusInDB(
-    req.user.userId,
-    req.params.id as string, 
-    req.body
-  );
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Ripple status updated",
-    data: result,
-  });
-});
-
 const getMyRipples = catchAsync(async (req: Request, res: Response) => {
-  const { waveId } = req.query;
-  const result = await RippleServices.getMyRipplesFromDB(req.user.userId, waveId as string);
+  const result = await RippleServices.getMyRipplesFromDB(req.user.userId, req.query);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -40,8 +25,40 @@ const getMyRipples = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getSingleRipple = catchAsync(async (req: Request, res: Response) => {
+  const result = await RippleServices.getSingleRippleFromDB(req.user.userId, req.params.id as string);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Ripple details retrieved",
+    data: result,
+  });
+});
+
+const updateRipple = catchAsync(async (req: Request, res: Response) => {
+  const result = await RippleServices.updateRippleInDB(req.user.userId, req.params.id as string, req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Ripple updated successfully",
+    data: result,
+  });
+});
+
+const deleteRipple = catchAsync(async (req: Request, res: Response) => {
+  const result = await RippleServices.deleteRippleFromDB(req.user.userId, req.params.id as string);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Ripple deleted successfully",
+    data: result,
+  });
+});
+
 export const RippleControllers = {
   createRipple,
-  updateRippleStatus,
   getMyRipples,
+  getSingleRipple,
+  updateRipple,
+  deleteRipple,
 };
