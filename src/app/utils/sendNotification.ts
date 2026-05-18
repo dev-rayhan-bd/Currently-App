@@ -24,7 +24,7 @@ export const sendNotification = async (
       user: userId,
       title,
       message,
-      type
+      // type
     });
 
  

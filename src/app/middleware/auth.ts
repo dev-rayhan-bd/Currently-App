@@ -2,11 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { JwtPayload, Secret } from 'jsonwebtoken';
 import config from '../config'; 
-import { TUserRole } from '../modules/User/user.interface';
+
 import catchAsync from '../utils/catchAsync';
 import AppError from '../errors/AppError';
 import { verifyToken } from '../modules/Auth/auth.utils';
 import { UserModel } from '../modules/User/user.model';
+import { TUserRole } from '../modules/Auth/auth.constant';
 
 
 

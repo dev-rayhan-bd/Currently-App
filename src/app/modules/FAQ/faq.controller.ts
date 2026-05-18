@@ -24,7 +24,7 @@ const getAllFaq = catchAsync(async(req:Request,res:Response)=>{
 })
 const getSingleFAQ = catchAsync(async(req:Request,res:Response)=>{
   const { id } = req.params;
-  const result = await FAQServices.getSingleFAQFromDB(id);
+  const result = await FAQServices.getSingleFAQFromDB(id as string);
   sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -62,7 +62,7 @@ payload.user = req?.user?.userId
 const deleteFaq = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const result = await FAQServices.deleteFAQFromDB(id);
+  const result = await FAQServices.deleteFAQFromDB(id as string);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -88,7 +88,7 @@ payload.image = path;
 
     // console.log("Data with file paths: ", data);
     
-    const result = await FAQServices.updateFAQFromDB(id,payload)
+    const result = await FAQServices.updateFAQFromDB(id as string,payload)
     sendResponse(res, {
       success: true,
       message: `FAQ Edited Succesfull`,
