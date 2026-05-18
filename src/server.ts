@@ -4,6 +4,7 @@ import app from './app';
 
 import mongoose from 'mongoose';
 import config from './app/config';
+import seedAdmin from './app/DB';
 
 // import { initializeSocket } from './socket';
 
@@ -12,7 +13,7 @@ let server: Server;
 async function main() {
   try {
     await mongoose.connect(config.database_url as string);
-
+ await seedAdmin(); 
     server = app.listen(config.port, () => {
       console.log(`app is listening on port ${config.port}`);
     });

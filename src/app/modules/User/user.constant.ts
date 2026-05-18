@@ -7,3 +7,4 @@ export type TEditProfile = {
   schoolName?: string;
   fcmToken?: string;
 };
+export const UserSearchableFields = ['firstName', 'lastName', 'email', 'schoolName'];

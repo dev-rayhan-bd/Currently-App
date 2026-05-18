@@ -1,5 +1,5 @@
 import AppError from "../../errors/AppError";
-import { TEditProfile } from "./user.constant";
+import { TEditProfile, UserSearchableFields } from "./user.constant";
 import httpStatus from 'http-status';
 import { UserModel } from "./user.model";
 import QueryBuilder from "../../builder/QueryBuilder";
@@ -20,10 +20,21 @@ const getMyProfileFromDB = async (id: string) => {
 };
 
 const getAllUserFromDB = async (query: Record<string, unknown>) => {
-  const queryBuilder = new QueryBuilder(UserModel.find(), query);
-  queryBuilder.search(["firstName", "lastName", "email", "role"]).filter().sort().paginate();
-  const result = await queryBuilder.modelQuery;
-  const meta = await queryBuilder.countTotal();
+
+  const baseQuery = UserModel.find({ 
+    role: { $nin: ['admin', 'superAdmin'] } 
+  });
+
+  const userQuery = new QueryBuilder(baseQuery, query)
+    .search(UserSearchableFields) // firstName, email 
+    .filter()  // role=student / status=active 
+    .sort()    // sort=-createdAt /sort=firstName
+    .paginate()// page=1&limit=10
+    .fields(); // fields=firstName,email 
+
+  const result = await userQuery.modelQuery;
+  const meta = await userQuery.countTotal();
+
   return { meta, result };
 };
 
