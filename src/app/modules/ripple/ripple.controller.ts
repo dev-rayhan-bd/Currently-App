@@ -102,6 +102,17 @@ const getProgressAnalytics = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getTodaysRipples = catchAsync(async (req: Request, res: Response) => {
+  const result = await RippleServices.getTodaysRipplesFromDB(req.user.userId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Todays tasks retrieved successfully',
+    data: result,
+  });
+});
+
 export const RippleControllers = {
   createRipple,
   getMyRipples,
@@ -111,5 +122,6 @@ export const RippleControllers = {
   getAllRipplesView,
   getRippleSessionManager,
   getSavedForLater,
-  getProgressAnalytics
+  getProgressAnalytics,
+  getTodaysRipples
 };

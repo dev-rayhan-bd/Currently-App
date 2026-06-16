@@ -21,6 +21,11 @@ router.get(
   RippleControllers.getAllRipplesView
 );
 router.get(
+  '/today', 
+  auth(USER_ROLE.student), 
+  RippleControllers.getTodaysRipples
+);
+router.get(
   '/saved-for-later', 
   auth(USER_ROLE.student), 
   RippleControllers.getSavedForLater

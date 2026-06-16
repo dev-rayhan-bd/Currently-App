@@ -525,7 +525,21 @@ const getProgressAnalyticsFromDB = async (userId: string, timeRange: string = '7
   };
 }
 
+const getTodaysRipplesFromDB = async (userId: string) => {
+  const endOfToday = moment().endOf('day').toDate();
 
+  const result = await RippleModel.find({
+    user: userId,
+    status: { $ne: 'completed' }, 
+    isDeleted: false,
+
+    dueDate: { $lte: endOfToday } 
+  })
+  .populate('waveId', 'title subject') 
+  .sort({ isPriority: -1, dueDate: 1 }); 
+
+  return result;
+};
 
 export const RippleServices = {
   createRippleIntoDB,
@@ -536,5 +550,6 @@ export const RippleServices = {
   getAllRipplesViewFromDB,
   getRippleSessionManagerData,
   getSavedForLaterRipples,
-  getProgressAnalyticsFromDB
+  getProgressAnalyticsFromDB,
+  getTodaysRipplesFromDB
 };

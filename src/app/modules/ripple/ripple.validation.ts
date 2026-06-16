@@ -4,6 +4,7 @@ const createRippleZodSchema = z.object({
   waveId: z.string().optional(),
   title: z.string().min(1, "Title is required"),
   duration: z.number().min(1).default(25),
+   dueDate: z.string().transform((val) => new Date(val)),
   notes: z.string().optional(),
   isPriority: z.boolean().optional(),
   order: z.number().optional(),

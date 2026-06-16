@@ -57,6 +57,7 @@ const getAISuggestionsFromDB = async (userId: string, waveId: string, count?: nu
 //   await WaveModel.findByIdAndUpdate(waveId, { totalRipples: ripples.length, isAIRipple: true });
 //   return result;
 // };
+
 const confirmAIPlanIntoDB = async (userId: string, waveId: string, ripples: any[]) => {
   const uId = new Types.ObjectId(userId);
   const wId = new Types.ObjectId(waveId);
@@ -91,7 +92,7 @@ const confirmAIPlanIntoDB = async (userId: string, waveId: string, ripples: any[
   return result;
 };
 
-const setupManualRipplesIntoDB = async (userId: string, waveId: string, count: number, duration: number) => {
+const setupManualRipplesIntoDB = async (userId: string, waveId: string, count: number, duration: number,dates?: Date[]) => {
   const uId = new Types.ObjectId(userId);
   const wId = new Types.ObjectId(waveId);
 
@@ -107,7 +108,8 @@ const setupManualRipplesIntoDB = async (userId: string, waveId: string, count: n
     title: `${wave.title} - Session ${existingCount + i + 1}`,
     duration,
     status: 'not-started',
-    order: existingCount + i + 1 
+    order: existingCount + i + 1 ,
+    dueDate: dates && dates[i] ? dates[i] : wave.dueDate
   }));
 
   const result = await RippleModel.insertMany(newRipples);

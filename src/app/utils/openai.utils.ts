@@ -3,18 +3,22 @@ import config from '../config';
 
 export const generateRipplesWithAI = async (title: string, subject: string, dueDate: Date, count?: number) => {
   const apiKey = config.openai_api_key;
+    const today = new Date().toISOString().split('T')[0]; 
+ const prompt = `You are a professional study planner. 
+  Today's Date: ${today}.
+  Project Task: "${title}" for Subject: "${subject}". 
+  Final Deadline: ${dueDate.toISOString().split('T')[0]}.
   
-  const prompt = `You are a professional study planner. 
-  Task: "${title}" for Subject: "${subject}". 
-  Deadline: ${dueDate.toISOString()}.
+  Task:
   Break this task into ${count || 'a logical number of'} study sessions (Ripples).
   
-  For each session, provide:
-  1. "title": actionable short name.
-  2. "duration": 25, 45, or 60 minutes.
-  3. "date": suggested date (YYYY-MM-DD) before the deadline.
+  IMPORTANT Rules for "date":
+  - All suggested dates MUST be between Today (${today}) and the Final Deadline.
+  - Do NOT suggest any dates in the past.
+  - If the deadline is today, all session dates must be today's date (${today}).
+  - Distribute the sessions logically across the available days.
 
-  Return ONLY a valid JSON object: {"ripples": [{"title": "...", "duration": 45, "date": "2026-04-10"}]}`;
+  Return ONLY a valid JSON object: {"ripples": [{"title": "...", "duration": 45, "date": "${today}"}]}`;
 
   const response = await axios.post(
     'https://api.openai.com/v1/chat/completions',
