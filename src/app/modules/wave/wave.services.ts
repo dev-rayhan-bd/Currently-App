@@ -92,7 +92,7 @@ const confirmAIPlanIntoDB = async (userId: string, waveId: string, ripples: any[
   return result;
 };
 
-const setupManualRipplesIntoDB = async (userId: string, waveId: string, count: number, duration: number,dates?: Date[]) => {
+const setupManualRipplesIntoDB = async (userId: string, waveId: string, count: number, duration: number,dates?: Date[],  titles?: string[]) => {
   const uId = new Types.ObjectId(userId);
   const wId = new Types.ObjectId(waveId);
 
@@ -105,7 +105,10 @@ const setupManualRipplesIntoDB = async (userId: string, waveId: string, count: n
   const newRipples = Array.from({ length: count }).map((_, i) => ({
     waveId: wId,
     user: uId,
-    title: `${wave.title} - Session ${existingCount + i + 1}`,
+    // title: `${wave.title} - Session ${existingCount + i + 1}`,
+      title: (titles && titles[i] && titles[i].trim() !== "") 
+           ? titles[i] 
+           : `${wave.title} - Session ${i + 1}`, 
     duration,
     status: 'not-started',
     order: existingCount + i + 1 ,

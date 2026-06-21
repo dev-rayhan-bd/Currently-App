@@ -51,7 +51,7 @@ const registerUserValidationSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   
-  dob: dobSchema.optional(), // Students-দের জন্য দরকার হতে পারে
+  dob: dobSchema.optional(), 
   schoolName: z.string().trim().max(100).optional(),
   fcmToken: z.string().trim().optional(),
 });
