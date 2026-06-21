@@ -10,40 +10,55 @@ import moment from 'moment';
 import { sendNotification } from "../../utils/sendNotification";
 
 
-// const createRippleIntoDB = async (userId: string, payload: TRipple) => {
-//   payload.user = userId as any;
-  
-//   const result = await RippleModel.create(payload);
-  
- 
+
+// const createRippleIntoDB = async (userId: string, payload: any) => {
+//   const uId = new Types.ObjectId(userId);
+//   payload.user = uId;
+
 //   if (payload.waveId) {
-//     await WaveModel.findByIdAndUpdate(payload.waveId, { $inc: { totalRipples: 1 } });
-//   }
+//     const wId = new Types.ObjectId(payload.waveId);
+    
   
-//   return result;
+//     const currentRippleCount = await RippleModel.countDocuments({ 
+//       waveId: wId, 
+//       user: uId, 
+//       isDeleted: false 
+//     });
+
+ 
+//     payload.order = currentRippleCount + 1;
+
+//     await WaveModel.findByIdAndUpdate(wId, { $inc: { totalRipples: 1 } });
+//   }
+
+//   return await RippleModel.create(payload);
 // };
+
+
 const createRippleIntoDB = async (userId: string, payload: any) => {
   const uId = new Types.ObjectId(userId);
   payload.user = uId;
 
-  if (payload.waveId) {
-    const wId = new Types.ObjectId(payload.waveId);
-    
-  
-    const currentRippleCount = await RippleModel.countDocuments({ 
-      waveId: wId, 
-      user: uId, 
-      isDeleted: false 
-    });
 
- 
-    payload.order = currentRippleCount + 1;
-
-    await WaveModel.findByIdAndUpdate(wId, { $inc: { totalRipples: 1 } });
+  if (payload.waveId && !payload.title) {
+    const wave = await WaveModel.findById(payload.waveId);
+    const count = await RippleModel.countDocuments({ waveId: payload.waveId, isDeleted: false });
+    payload.title = `${wave?.title} - Session ${count + 1}`;
   }
 
-  return await RippleModel.create(payload);
+  
+  if (!payload.dueDate) payload.dueDate = new Date();
+
+  const result = await RippleModel.create(payload);
+  
+  if (payload.waveId) {
+    await WaveModel.findByIdAndUpdate(payload.waveId, { $inc: { totalRipples: 1 } });
+  }
+  return result;
 };
+
+
+
 const getMyRipplesFromDB = async (userId: string, query: Record<string, unknown>) => {
   const rippleQuery = new QueryBuilder(RippleModel.find({ user: userId }), query)
     .search(["title"])
@@ -105,70 +120,6 @@ const deleteRippleFromDB = async (userId: string, id: string) => {
   return result;
 };
 
-
-// const getAllRipplesViewFromDB = async (userId: string, query: Record<string, unknown>) => {
-
-//   const uId = new Types.ObjectId(userId);
-
-
-//   const filter: any = { user: uId, isDeleted: { $ne: true } };
-//   if (query.source) {
-//     filter.source = query.source;
-//   }
-
-
-//   const stats = await RippleModel.aggregate([
-//     { $match: filter },
-//     {
-//       $facet: {
-     
-//         "summary": [
-//           {
-//             $group: {
-//               _id: null,
-//               total: { $sum: 1 },
-//               active: { $sum: { $cond: [{ $eq: ["$status", "in-progress"] }, 1, 0] } },
-//               paused: { $sum: { $cond: [{ $eq: ["$status", "paused"] }, 1, 0] } },
-//               done: { $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] } },
-//             },
-//           },
-//         ],
-  
-//         "list": [
-//           { $sort: { createdAt: -1 } },
-//           {
-//             $lookup: {
-//               from: 'waves',
-//               localField: 'waveId',
-//               foreignField: '_id',
-//               as: 'waveInfo'
-//             }
-//           },
-//           { $unwind: { path: "$waveInfo", preserveNullAndEmptyArrays: true } }
-//         ]
-//       }
-//     }
-//   ]);
-
-
-//   const allRipples = stats[0].list;
-//   const groupedData = allRipples.reduce((acc: any, ripple: any) => {
-//     const waveName = ripple.waveInfo ? ripple.waveInfo.title : "Standalone Tasks";
-//     if (!acc[waveName]) {
-//       acc[waveName] = { waveInfo: ripple.waveInfo || null, ripples: [] };
-//     }
-//     acc[waveName].ripples.push(ripple);
-//     return acc;
-//   }, {});
-
-//   return {
-//     summary: stats[0].summary[0] || { total: 0, active: 0, paused: 0, done: 0 },
-//     groupedRipples: Object.keys(groupedData).map(key => ({
-//       waveTitle: key,
-//       ...groupedData[key]
-//     }))
-//   };
-// };
 
 
 const getAllRipplesViewFromDB = async (userId: string, query: Record<string, unknown>) => {
