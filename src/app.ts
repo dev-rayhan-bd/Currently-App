@@ -47,7 +47,10 @@ app.use(
       'https://el-afrik.vercel.app',
       'http://15.223.245.199',
       'http://15.223.245.199:3000',
-    'https://currently-dashboard.vercel.app'
+    'https://currently-dashboard.vercel.app',
+    'https://dashboard.chronomusapp.com',
+    'https://chronomusapp.com',
+    'https://www.chronomusapp.com' 
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
